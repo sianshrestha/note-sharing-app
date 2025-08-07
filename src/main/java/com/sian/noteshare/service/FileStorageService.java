@@ -1,7 +1,6 @@
 package com.sian.noteshare.service;
 
 
-import com.sian.noteshare.dto.FileMetadata;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -41,7 +40,7 @@ public class FileStorageService {
             fileExtension = originalFileName.substring(dotIndex);
         }
 
-        String storedFileName = UUID.randomUUID().toString() + "." + fileExtension;
+        String storedFileName = UUID.randomUUID() + "." + fileExtension;
 
         try {
             Path targetLocation = fileStorageLocation.resolve(storedFileName);
