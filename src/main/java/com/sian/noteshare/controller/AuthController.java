@@ -4,6 +4,7 @@ import com.sian.noteshare.dto.JwtAuthenticationResponse;
 import com.sian.noteshare.dto.LoginRequest;
 import com.sian.noteshare.dto.RegisterRequest;
 import com.sian.noteshare.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,13 +19,13 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthenticationResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<JwtAuthenticationResponse> login( @Valid @RequestBody LoginRequest request) {
         JwtAuthenticationResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
-    public ResponseEntity<JwtAuthenticationResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<JwtAuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
         JwtAuthenticationResponse response = authService.register(request);
         return ResponseEntity.ok(response);
     }

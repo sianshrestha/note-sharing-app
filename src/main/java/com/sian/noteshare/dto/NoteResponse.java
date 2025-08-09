@@ -12,9 +12,11 @@ public class NoteResponse {
     private String subject;
     private String description;
     private String originalFileName;
+    private String storedFileName;
     private String fileType;
     private Long fileSize;
+    private String filePath;
     private String downloadUrl;
     private LocalDateTime uploadedAt;
-    private String uploadedByUsername;
+    private String uploadedBy;
 }

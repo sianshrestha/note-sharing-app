@@ -43,9 +43,9 @@ public class FileStorageService {
         String storedFileName = UUID.randomUUID() + "." + fileExtension;
 
         try {
-            Path targetLocation = fileStorageLocation.resolve(storedFileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-            return storedFileName;
+            Path filePath = fileStorageLocation.resolve(storedFileName);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            return filePath.toString();
         } catch (IOException e) {
             throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", e);
         }

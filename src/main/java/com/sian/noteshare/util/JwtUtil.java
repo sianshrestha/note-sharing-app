@@ -1,7 +1,6 @@
 package com.sian.noteshare.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
+import java.util.Date;
 
 @Component
 public class JwtUtil {
@@ -24,11 +24,11 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(String email) {
         return Jwts.builder()
-                .subject(username)
-                .issuedAt(new java.util.Date())
-                .expiration(new java.util.Date(System.currentTimeMillis() + jwtExpirationTime))
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + jwtExpirationTime))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -49,8 +49,17 @@ public class JwtUtil {
                 .build()
                     .parseSignedClaims(token);
             return true;
-        } catch (Exception e) {
-            return false;
+        } catch (ExpiredJwtException ex) {
+            System.out.println("JWT expired");
+        } catch (UnsupportedJwtException ex) {
+            System.out.println("Unsupported JWT");
+        } catch (MalformedJwtException ex) {
+            System.out.println("Malformed JWT");
+        } catch (SignatureException ex) {
+            System.out.println("Invalid JWT signature");
+        } catch (IllegalArgumentException ex) {
+            System.out.println("JWT claims string is empty");
         }
+        return false;
     }
 }
