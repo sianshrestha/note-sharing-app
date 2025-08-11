@@ -5,6 +5,7 @@ import com.sian.noteshare.dto.NoteUploadRequest;
 import com.sian.noteshare.service.NoteService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +19,8 @@ public class NoteController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<NoteResponse> uploadNote( @ModelAttribute @Valid NoteUploadRequest request) {
+    public ResponseEntity<NoteResponse> uploadNote(@ModelAttribute @Valid NoteUploadRequest request) {
         NoteResponse response = noteService.uploadNote(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

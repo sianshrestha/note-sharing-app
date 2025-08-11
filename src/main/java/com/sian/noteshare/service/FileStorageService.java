@@ -1,35 +1,29 @@
 package com.sian.noteshare.service;
 
 
-import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class FileStorageService {
+    private final S3Client s3Client;
+    private final S3Presigner s3Presigner;
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
-
-    private Path fileStorageLocation;
-
-    @PostConstruct
-    public void init() {
-        this.fileStorageLocation=Paths.get(uploadDir).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(fileStorageLocation);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not create upload directory: " + uploadDir, e);
-        }
-    }
+    @Value("${aws.s3.bucket-name}")
+    private String bucketName;
 
     public String storeFile(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
@@ -43,15 +37,32 @@ public class FileStorageService {
         String storedFileName = UUID.randomUUID() + "." + fileExtension;
 
         try {
-            Path filePath = fileStorageLocation.resolve(storedFileName);
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            return filePath.toString();
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(storedFileName)
+                    .contentType(file.getContentType())
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
+
+            return storedFileName;
         } catch (IOException e) {
-            throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", e);
+            throw new RuntimeException("Failed to upload file to S3:  " + originalFileName + ". Please try again!", e);
         }
     }
 
-    public Path loadFileAsPath(String storedFileName) {
-        return fileStorageLocation.resolve(storedFileName).normalize();
+    public String generatePresignedUrl(String storedFileName) {
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(storedFileName)
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(15))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
+
 }

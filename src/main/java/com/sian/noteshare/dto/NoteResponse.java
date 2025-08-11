@@ -15,7 +15,6 @@ public class NoteResponse {
     private String storedFileName;
     private String fileType;
     private Long fileSize;
-    private String filePath;
     private String downloadUrl;
     private LocalDateTime uploadedAt;
     private String uploadedBy;

@@ -14,7 +14,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 @Service
@@ -37,10 +36,8 @@ public class NoteService {
             throw new FileStorageException("Invalid file type: " + contentType);
         }
 
-        String filePath = fileStorageService.storeFile(file);
+        String storedFileName = fileStorageService.storeFile(file);
         String originalFileName = file.getOriginalFilename();
-        String storedFileName = Paths.get(filePath).getFileName().toString();
-        String downloadUrl = "/notes/download/" + storedFileName;
 
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User user = userRepository.findByUsername(username)
@@ -53,28 +50,30 @@ public class NoteService {
                 .originalFileName(originalFileName)
                 .storedFileName(storedFileName)
                 .fileType(contentType)
-                .filePath(filePath)
                 .fileSize(file.getSize())
-                .downloadUrl(downloadUrl)
                 .uploadedAt(LocalDateTime.now())
                 .uploadedBy(user)
                 .build();
 
-        Note savedNote = noteRepository.save(note);
+        noteRepository.save(note);
+        return mapToNoteResponse(note);
+    }
+
+    public NoteResponse mapToNoteResponse(Note note) {
+        String presignedUrl = fileStorageService.generatePresignedUrl(note.getStoredFileName());
 
         return NoteResponse.builder()
-                .id(savedNote.getId())
-                .title(savedNote.getTitle())
-                .subject(savedNote.getSubject())
-                .description(savedNote.getDescription())
-                .originalFileName(savedNote.getOriginalFileName())
-                .storedFileName(savedNote.getStoredFileName())
-                .fileType(savedNote.getFileType())
-                .fileSize(savedNote.getFileSize())
-                .filePath(savedNote.getFilePath())
-                .downloadUrl(savedNote.getDownloadUrl())
-                .uploadedAt(savedNote.getUploadedAt())
-                .uploadedBy(savedNote.getUploadedBy().getUsername())
+                .id(note.getId())
+                .title(note.getTitle())
+                .subject(note.getSubject())
+                .description(note.getDescription())
+                .originalFileName(note.getOriginalFileName())
+                .storedFileName(note.getStoredFileName())
+                .fileType(note.getFileType())
+                .fileSize(note.getFileSize())
+                .downloadUrl(presignedUrl)
+                .uploadedAt(note.getUploadedAt())
+                .uploadedBy(note.getUploadedBy().getUsername())
                 .build();
     }
 }

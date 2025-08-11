@@ -25,10 +25,8 @@ public class Note {
     private String originalFileName;
     private String storedFileName;
     private String fileType;
-    private String filePath;
     private Long fileSize;
 
-    private String downloadUrl;
     private LocalDateTime uploadedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
