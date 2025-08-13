@@ -15,6 +15,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.util.Collections;
+
 @RestController
 @RequestMapping("/notes")
 @RequiredArgsConstructor
@@ -48,5 +51,18 @@ public class NoteController {
     public ResponseEntity<Void> deleteNoteById(@PathVariable Long id, Authentication authentication) {
         noteService.deleteNote(id, authentication.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/download")
+    public ResponseEntity<?> downloadNote(
+            @PathVariable Long id, @RequestParam(defaultValue = "false") boolean redirect) {
+        String downloadUrl = noteService.downloadNote(id);
+
+        if (redirect) {
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create(downloadUrl))
+                    .build();
+        }
+        return ResponseEntity.ok(Collections.singletonMap("downloadUrl", downloadUrl));
     }
 }

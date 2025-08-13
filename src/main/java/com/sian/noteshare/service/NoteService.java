@@ -125,4 +125,11 @@ public class NoteService {
         return noteRepository.findAll(spec, pageable)
                 .map(this::mapToNoteResponse);
     }
+
+    public String downloadNote(Long id) {
+        Note note = noteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + id));
+
+        return mapToNoteResponse(note).getDownloadUrl();
+    }
 }
