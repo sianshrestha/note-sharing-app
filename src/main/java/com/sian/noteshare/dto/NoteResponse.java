@@ -2,7 +2,7 @@ package com.sian.noteshare.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -16,6 +16,6 @@ public class NoteResponse {
     private String fileType;
     private Long fileSize;
     private String downloadUrl;
-    private LocalDateTime uploadedAt;
+    private Instant uploadedAt;
     private String uploadedBy;
 }

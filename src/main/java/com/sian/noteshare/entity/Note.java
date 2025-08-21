@@ -3,7 +3,8 @@ package com.sian.noteshare.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Set;
 
 @Entity
 @Table(name = "notes")
@@ -27,10 +28,13 @@ public class Note {
     private String fileType;
     private Long fileSize;
 
-    private LocalDateTime uploadedAt;
+    private Instant uploadedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User uploadedBy;
+
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Bookmark> bookmarks;
 
 }

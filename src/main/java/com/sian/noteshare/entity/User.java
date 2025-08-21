@@ -45,6 +45,9 @@ public class User {
     @UpdateTimestamp
     private Instant updatedAt;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Bookmark> bookmarks;
+
     public enum AuthProvider {
         LOCAL,
         GOOGLE,

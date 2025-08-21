@@ -20,7 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
@@ -57,7 +57,7 @@ public class NoteService {
                 .storedFileName(storedFileName)
                 .fileType(contentType)
                 .fileSize(file.getSize())
-                .uploadedAt(LocalDateTime.now())
+                .uploadedAt(Instant.now())
                 .uploadedBy(user)
                 .build();
 

@@ -52,6 +52,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/notes/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/notes/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()
                         .requestMatchers("/bookmarks/**").authenticated()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
