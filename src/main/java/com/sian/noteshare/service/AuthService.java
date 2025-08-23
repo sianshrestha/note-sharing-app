@@ -25,6 +25,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final EmailService emailService;
 
     public JwtAuthenticationResponse login(LoginRequest request) {
         try {
@@ -60,6 +61,7 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+        emailService.sendWelcomeEmail(user);
 
         return JwtAuthenticationResponse.builder()
                 .accessToken(jwtUtil.generateToken(user.getEmail()))

@@ -26,7 +26,7 @@ public class NoteController {
     private final NoteService noteService;
 
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<NoteResponse> uploadNote(@ModelAttribute @Valid NoteUploadRequest request) {
         NoteResponse response = noteService.uploadNote(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

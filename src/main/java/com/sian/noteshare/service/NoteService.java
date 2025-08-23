@@ -29,6 +29,7 @@ public class NoteService {
     private final NoteRepository noteRepository;
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
+    private final EmailService emailService;
 
     public NoteResponse uploadNote(NoteUploadRequest request) {
         MultipartFile file = request.getFile();
@@ -62,6 +63,7 @@ public class NoteService {
                 .build();
 
         noteRepository.save(note);
+        emailService.sendUploadConfirmation(user, note);
         return mapToNoteResponse(note);
     }
 
