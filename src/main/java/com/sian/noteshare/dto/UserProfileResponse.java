@@ -16,6 +16,7 @@ public class UserProfileResponse {
     private String username;
     private String email;
     private Instant registeredAt;
+    private Instant updatedAt;
     private List<NoteSummary> uploadedNotes;
     private List<NoteSummary> bookmarkedNotes;
 
