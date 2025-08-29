@@ -1,6 +1,7 @@
 package com.sian.noteshare.controller;
 
 import com.sian.noteshare.dto.NoteResponse;
+import com.sian.noteshare.dto.NoteUpdateRequest;
 import com.sian.noteshare.dto.NoteUploadRequest;
 import com.sian.noteshare.service.NoteService;
 import jakarta.validation.Valid;
@@ -45,6 +46,17 @@ public class NoteController {
     @GetMapping("/{id}")
     public ResponseEntity<NoteResponse> getNoteById(@PathVariable Long id) {
         return ResponseEntity.ok(noteService.getNoteById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<NoteResponse> updateNote(
+            @PathVariable("id") Long noteId,
+            @ModelAttribute NoteUpdateRequest request,
+            Authentication authentication) {
+
+        String username = authentication.getName();
+        NoteResponse updatedNote = noteService.updateNote(noteId, request, username);
+        return ResponseEntity.ok(updatedNote);
     }
 
     @DeleteMapping("/{id}")

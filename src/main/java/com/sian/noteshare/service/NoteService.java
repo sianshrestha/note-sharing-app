@@ -1,6 +1,7 @@
 package com.sian.noteshare.service;
 
 import com.sian.noteshare.dto.NoteResponse;
+import com.sian.noteshare.dto.NoteUpdateRequest;
 import com.sian.noteshare.dto.NoteUploadRequest;
 import com.sian.noteshare.entity.Note;
 import com.sian.noteshare.entity.User;
@@ -89,6 +90,41 @@ public class NoteService {
         Note note = noteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + id));
         return mapToNoteResponse(note);
+    }
+
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN') or #username == principal.username")
+    public NoteResponse updateNote(Long noteId, NoteUpdateRequest request, String username) {
+        Note note = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Note not found with id " + noteId));
+
+        if (!note.getUploadedBy().getUsername().equals(username) &&
+                SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
+                        .noneMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            throw new SecurityException("You are not allowed to update this note");
+        }
+
+        // Update metadata
+        if (request.getTitle() != null) note.setTitle(request.getTitle());
+        if (request.getSubject() != null) note.setSubject(request.getSubject());
+        if (request.getDescription() != null) note.setDescription(request.getDescription());
+
+        // Update file if present
+        MultipartFile file = request.getFile();
+        if (file != null) {
+            // Delete old file from S3
+            fileStorageService.deleteFile(note.getStoredFileName());
+
+            // Upload new file
+            String storedFileName = fileStorageService.storeFile(file);
+            note.setOriginalFileName(file.getOriginalFilename());
+            note.setStoredFileName(storedFileName);
+            note.setFileType(file.getContentType());
+            note.setFileSize(file.getSize());
+        }
+
+        Note updatedNote = noteRepository.save(note);
+        return mapToNoteResponse(updatedNote);
     }
 
     @PreAuthorize("hasRole('ADMIN') or #username == principal.username")
