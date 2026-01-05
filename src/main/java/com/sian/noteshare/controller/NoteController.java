@@ -38,7 +38,7 @@ public class NoteController {
             @RequestParam(required = false) String uploadedBy,
             @RequestParam(required = false) String subject,
             @RequestParam(required = false) String title,
-            @PageableDefault(size = 10, sort = "uploadedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(size = 9, sort = "uploadedAt", direction = Sort.Direction.DESC) Pageable pageable) {
 
         return ResponseEntity.ok(noteService.listNotes(uploadedBy, subject, title, pageable));
     }

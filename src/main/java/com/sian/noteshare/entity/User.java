@@ -23,7 +23,7 @@ public class User {
     @Column(unique = true, nullable = false, length = 50)
     private String username;
 
-    @Column(length = 255)
+    @Column(length = 255, nullable = true)
     private String password;
 
     @Column(length = 100, unique = true, nullable = false)

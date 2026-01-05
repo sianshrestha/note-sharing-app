@@ -52,6 +52,10 @@ public class AuthService {
             throw new UserAlreadyExistsException("Email " + request.getEmail() + " is already registered.");
         }
 
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException("Username " + request.getUsername() + " is already taken.");
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())

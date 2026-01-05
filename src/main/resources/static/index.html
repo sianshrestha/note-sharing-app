@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note Share Tester</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --bg: #f3f4f6;
+            --card: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2, h3 { margin-top: 0; }
+        .hidden { display: none !important; }
+
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; }
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover { opacity: 0.9; }
+        button.danger { background-color: var(--danger); }
+        button.secondary { background-color: #4b5563; }
+
+        /* Auth Buttons */
+        .oauth-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-google { background-color: #db4437; }
+        .btn-github { background-color: #333; }
+
+        /* Note List */
+        .note-item {
+            border: 1px solid #e5e7eb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .note-info h4 { margin: 0 0 5px 0; }
+        .note-meta { font-size: 0.85em; color: #6b7280; }
+        .note-actions { display: flex; gap: 5px; }
+
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .status { font-weight: bold; }
+        .token-display {
+            word-break: break-all;
+            font-size: 0.7em;
+            background: #eee;
+            padding: 5px;
+            margin-top: 5px;
+            max-height: 50px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="navbar">
+        <h1>📝 Note Share App</h1>
+        <div id="userInfoSection" class="hidden">
+            <span>Hello, <span id="displayUsername">User</span></span>
+            <button onclick="logout()" class="secondary" style="margin-left: 10px;">Logout</button>
+        </div>
+    </div>
+
+    <div id="authSection">
+        <div class="card">
+            <h2>Authentication</h2>
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <h3>Login</h3>
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" required placeholder="user@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" required>
+                        </div>
+                        <button type="submit">Login</button>
+                    </form>
+                </div>
+                <div style="border-left: 1px solid #eee; padding-left: 20px; flex: 1;">
+                    <h3>Register</h3>
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" name="password" required>
+                        </div>
+                        <button type="submit" class="secondary">Register</button>
+                    </form>
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h3>Or Login with OAuth2</h3>
+            <div class="oauth-buttons">
+                <a href="http://localhost:8080/oauth2/authorization/google">
+                    <button type="button" class="btn-google">Login with Google</button>
+                </a>
+                <a href="http://localhost:8080/oauth2/authorization/github">
+                    <button type="button" class="btn-github">Login with GitHub</button>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="appSection" class="hidden">
+
+        <div class="card">
+            <h2>My Profile</h2>
+            <div id="profileDetails">Loading...</div>
+        </div>
+
+        <div class="card">
+            <h2>Upload Note</h2>
+            <form onsubmit="handleUpload(event)">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="uploadTitle" required>
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" id="uploadSubject">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="uploadDesc" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>File</label>
+                    <input type="file" id="uploadFile" required>
+                </div>
+                <button type="submit">Upload Note</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>All Notes</h2>
+                <button onclick="loadNotes()" class="secondary">Refresh</button>
+            </div>
+            <div id="notesList">
+                <p>Loading notes...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:8080';
+    let authToken = localStorage.getItem('jwt_token');
+
+    // --- INIT ---
+    window.onload = function() {
+        // Check for OAuth2 token in URL (redirected from backend)
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get('token');
+
+        if (urlToken) {
+            authToken = urlToken;
+            localStorage.setItem('jwt_token', authToken);
+            // Clean URL
+            window.history.replaceState({}, document.title, "/");
+        }
+
+        updateUIState();
+    };
+
+    function updateUIState() {
+        const authSection = document.getElementById('authSection');
+        const appSection = document.getElementById('appSection');
+        const userInfoSection = document.getElementById('userInfoSection');
+
+        if (authToken) {
+            authSection.classList.add('hidden');
+            appSection.classList.remove('hidden');
+            userInfoSection.classList.remove('hidden');
+            loadProfile();
+            loadNotes();
+        } else {
+            authSection.classList.remove('hidden');
+            appSection.classList.add('hidden');
+            userInfoSection.classList.add('hidden');
+        }
+    }
+
+    function logout() {
+        authToken = null;
+        localStorage.removeItem('jwt_token');
+        updateUIState();
+    }
+
+    // --- API HELPERS ---
+    async function fetchAuth(endpoint, options = {}) {
+        options.headers = options.headers || {};
+        options.headers['Authorization'] = `Bearer ${authToken}`;
+
+        const response = await fetch(`${API_BASE}${endpoint}`, options);
+        if (response.status === 401 || response.status === 403) {
+            alert("Session expired. Please login again.");
+            logout();
+            return null;
+        }
+        return response;
+    }
+
+    // --- AUTH ACTIONS ---
+    async function handleLogin(e) {
+        e.preventDefault();
+        const form = e.target;
+        const payload = {
+            email: form.email.value,
+            password: form.password.value
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('Login failed');
+
+            const data = await res.json();
+            authToken = data.accessToken;
+            localStorage.setItem('jwt_token', authToken);
+            updateUIState();
+            form.reset();
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
+    async function handleRegister(e) {
+        e.preventDefault();
+        const form = e.target;
+        const payload = {
+            username: form.username.value,
+            email: form.email.value,
+            password: form.password.value
+        };
+
+        try {
+            const res = await fetch(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('Registration failed');
+
+            const data = await res.json();
+            authToken = data.accessToken;
+            localStorage.setItem('jwt_token', authToken);
+            updateUIState();
+            form.reset();
+            alert("Registered successfully!");
+        } catch (err) {
+            alert(err.message);
+        }
+    }
+
+    // --- DATA ACTIONS ---
+    async function loadProfile() {
+        const res = await fetchAuth('/users/profile/me');
+        if (!res) return;
+        const data = await res.json();
+
+        document.getElementById('displayUsername').innerText = data.username;
+        document.getElementById('profileDetails').innerHTML = `
+            <p><strong>Username:</strong> ${data.username}</p>
+            <p><strong>Email:</strong> ${data.email}</p>
+            <p><strong>Uploaded Notes:</strong> ${data.uploadedNotes ? data.uploadedNotes.length : 0}</p>
+            <p><strong>Bookmarked Notes:</strong> ${data.bookmarkedNotes ? data.bookmarkedNotes.length : 0}</p>
+        `;
+    }
+
+    async function loadNotes() {
+        const res = await fetchAuth('/notes'); // Defaults: page 0, size 10
+        if (!res) return;
+        const page = await res.json();
+        const notes = page.content;
+
+        const list = document.getElementById('notesList');
+        if (notes.length === 0) {
+            list.innerHTML = '<p>No notes found.</p>';
+            return;
+        }
+
+        list.innerHTML = notes.map(note => `
+            <div class="note-item">
+                <div class="note-info">
+                    <h4>${note.title} <span style="font-weight:normal; font-size:0.8em; color:#666">(${note.fileType})</span></h4>
+                    <div class="note-meta">
+                        Subject: ${note.subject || 'N/A'} |
+                        By: ${note.uploadedBy} |
+                        Size: ${(note.fileSize / 1024).toFixed(1)} KB
+                    </div>
+                </div>
+                <div class="note-actions">
+                    <button onclick="downloadNote(${note.id})" class="secondary">Download</button>
+                    <button onclick="deleteNote(${note.id})" class="danger">Delete</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function handleUpload(e) {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('title', document.getElementById('uploadTitle').value);
+        formData.append('subject', document.getElementById('uploadSubject').value);
+        formData.append('description', document.getElementById('uploadDesc').value);
+        formData.append('file', document.getElementById('uploadFile').files[0]);
+
+        try {
+            const res = await fetchAuth('/notes/upload', {
+                method: 'POST',
+                // Content-Type header is auto-set by browser for FormData with boundary
+                body: formData
+            });
+
+            if (res.ok) {
+                alert('Note uploaded!');
+                e.target.reset();
+                loadNotes();
+                loadProfile(); // Update count
+            } else {
+                alert('Upload failed');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error uploading note');
+        }
+    }
+
+    async function deleteNote(id) {
+        if (!confirm('Are you sure?')) return;
+
+        const res = await fetchAuth(`/notes/${id}`, { method: 'DELETE' });
+        if (res && res.ok) {
+            loadNotes();
+            loadProfile();
+        } else {
+            alert('Failed to delete (Are you the owner?)');
+        }
+    }
+
+    async function downloadNote(id) {
+        // First get the download URL
+        const res = await fetchAuth(`/notes/${id}/download`);
+        if (res && res.ok) {
+            const data = await res.json();
+            // Open in new tab
+            window.open(data.downloadUrl, '_blank');
+        } else {
+            alert('Could not get download link');
+        }
+    }
+</script>
+
+</body>
+</html>
