@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:15
+    container_name: noteshare_db
+    environment:
+      POSTGRES_DB: note_sharing_app
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - noteshare_network
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d note_sharing_app" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: noteshare
+    ports:
+      - "8080:8080"
+    depends_on:
+        db:
+            condition: service_healthy
+    networks:
+        - noteshare_network
+    environment:
+      # Database Config
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/note_sharing_app
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      # JWT & AWS
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY}
+
+      # OAuth2
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+
+      # Mail Config
+      YOUR_EMAIL: ${YOUR_EMAIL}
+      YOUR_EMAIL_PASSWORD: ${YOUR_EMAIL_PASSWORD}
+
+networks:
+  noteshare_network:
+    driver: bridge
+
+volumes:
+    postgres_data:

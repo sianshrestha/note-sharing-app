@@ -31,4 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
-spring.env
+
+.env
+target
+*.jar
+
+.DS_Store
