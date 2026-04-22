@@ -4,6 +4,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/**
+ * Data Transfer Object for updating a user's profile information.
+ */
 @Data
 public class UserProfileUpdateRequest {
 

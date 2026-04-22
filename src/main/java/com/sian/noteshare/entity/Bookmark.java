@@ -6,6 +6,11 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
+/**
+ * Represents a user's saved bookmark for a specific note.
+ * Acts as a join table entity between User and Note with a unique constraint
+ * to prevent a user from bookmarking the same note multiple times.
+ */
 @Entity
 @Table(name = "bookmarks", uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "note_id"})})
 @AllArgsConstructor
@@ -19,10 +24,16 @@ public class Bookmark {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * The user who saved the bookmark.
+     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    /**
+     * The note that was bookmarked.
+     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "note_id", nullable = false)
     private Note note;

@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Data Transfer Object representing the payload for registering a new local user.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

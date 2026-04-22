@@ -1,6 +1,5 @@
 package com.sian.noteshare.service;
 
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,10 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 
+/**
+ * Service class for interacting with Amazon S3.
+ * Handles uploading files, generating secure download links, and deleting files.
+ */
 @Service
 @RequiredArgsConstructor
 public class FileStorageService {
@@ -27,6 +30,14 @@ public class FileStorageService {
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
+    /**
+     * Uploads a file to the configured AWS S3 bucket.
+     * Generates a unique UUID filename to prevent overwriting.
+     *
+     * @param file The multipart file to upload.
+     * @return The unique stored filename generated for the S3 object.
+     * @throws RuntimeException if an I/O error occurs during upload.
+     */
     public String storeFile(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
         String fileExtension = "";
@@ -53,6 +64,12 @@ public class FileStorageService {
         }
     }
 
+    /**
+     * Generates a time-limited presigned URL allowing a client to download a file securely.
+     *
+     * @param storedFileName The unique key/filename of the object in S3.
+     * @return A presigned URL string valid for 15 minutes.
+     */
     public String generatePresignedUrl(String storedFileName) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
@@ -67,14 +84,19 @@ public class FileStorageService {
         return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
 
+    /**
+     * Deletes a file from the AWS S3 bucket.
+     *
+     * @param storedFileName The unique key/filename of the object to delete.
+     * @throws RuntimeException if the S3 client fails to delete the file.
+     */
     public void deleteFile(String storedFileName) {
         try {
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                            .bucket(bucketName).key(storedFileName).build();
+                    .bucket(bucketName).key(storedFileName).build();
             s3Client.deleteObject(deleteObjectRequest);
         } catch (S3Exception e) {
             throw new RuntimeException("Could not delete file from S3: " + storedFileName, e);
         }
     }
-
 }

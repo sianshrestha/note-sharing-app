@@ -8,12 +8,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+/**
+ * Custom implementation of Spring Security's UserDetails interface.
+ * Adapts our domain User entity to the structure required by Spring Security.
+ *
+ * @param user The underlying application User entity.
+ */
 public record UserPrincipal(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return user.getRoles().stream()
-                .map(SimpleGrantedAuthority::new)  // "ROLE_USER" etc.
+                .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
     }
 
@@ -24,7 +30,7 @@ public record UserPrincipal(User user) implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return user.getUsername(); // Can be changed to getEmail() if email is used as login identifier
     }
 
     @Override

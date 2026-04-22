@@ -17,6 +17,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
+/**
+ * Service class responsible for user authentication and registration operations.
+ * Handles the creation of new users, password hashing, and JWT token generation.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -27,11 +31,18 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
 
+    /**
+     * Authenticates a user based on email and password and generates a JWT.
+     *
+     * @param request The login request containing email and password.
+     * @return JwtAuthenticationResponse containing the generated JWT token.
+     * @throws InvalidCredentialsException if authentication fails.
+     * @throws UsernameNotFoundException if the user does not exist.
+     */
     public JwtAuthenticationResponse login(LoginRequest request) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(),
-                            request.getPassword())
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (Exception e) {
             throw new InvalidCredentialsException("Invalid email or password");
@@ -47,6 +58,13 @@ public class AuthService {
                 .build();
     }
 
+    /**
+     * Registers a new local user, hashes their password, and sends a welcome email.
+     *
+     * @param request The registration request containing username, email, and password.
+     * @return JwtAuthenticationResponse containing the generated JWT token.
+     * @throws UserAlreadyExistsException if the email or username is already taken.
+     */
     public JwtAuthenticationResponse register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new UserAlreadyExistsException("Email " + request.getEmail() + " is already registered.");

@@ -6,6 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * Data Transfer Object for updating an existing note's metadata or file.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

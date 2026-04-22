@@ -6,6 +6,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Data Transfer Object representing a standardized API error response.
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

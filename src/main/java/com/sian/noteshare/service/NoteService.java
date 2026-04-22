@@ -23,6 +23,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 
+/**
+ * Service class handling core business logic for Note management.
+ * This includes uploading, updating, retrieving, and deleting notes,
+ * as well as interacting with the FileStorageService.
+ */
 @Service
 @RequiredArgsConstructor
 public class NoteService {
@@ -32,6 +37,14 @@ public class NoteService {
     private final FileStorageService fileStorageService;
     private final EmailService emailService;
 
+    /**
+     * Validates and uploads a file to S3, then saves the note metadata in the database.
+     *
+     * @param request The note upload request containing the file and metadata.
+     * @return NoteResponse containing the saved note details and download URL.
+     * @throws FileStorageException if the file is empty or of an invalid type.
+     * @throws ResourceNotFoundException if the authenticated user cannot be found.
+     */
     public NoteResponse uploadNote(NoteUploadRequest request) {
         MultipartFile file = request.getFile();
 
@@ -68,6 +81,12 @@ public class NoteService {
         return mapToNoteResponse(note);
     }
 
+    /**
+     * Maps a Note entity to a NoteResponse DTO and generates an S3 presigned URL.
+     *
+     * @param note The Note entity to map.
+     * @return NoteResponse DTO.
+     */
     public NoteResponse mapToNoteResponse(Note note) {
         String presignedUrl = fileStorageService.generatePresignedUrl(note.getStoredFileName());
 
@@ -86,12 +105,30 @@ public class NoteService {
                 .build();
     }
 
+    /**
+     * Retrieves a specific note by its ID.
+     *
+     * @param id The ID of the note.
+     * @return NoteResponse containing note details.
+     * @throws ResourceNotFoundException if the note is not found.
+     */
     public NoteResponse getNoteById(Long id) {
         Note note = noteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + id));
         return mapToNoteResponse(note);
     }
 
+    /**
+     * Updates an existing note's metadata and optionally replaces its file.
+     * Only the uploader or an admin can update the note.
+     *
+     * @param noteId The ID of the note to update.
+     * @param request The update request containing new metadata or file.
+     * @param username The username of the authenticated user requesting the update.
+     * @return NoteResponse containing the updated note details.
+     * @throws SecurityException if the user is not authorized to update the note.
+     * @throws ResourceNotFoundException if the note is not found.
+     */
     @Transactional
     @PreAuthorize("hasRole('ADMIN') or #username == principal.username")
     public NoteResponse updateNote(Long noteId, NoteUpdateRequest request, String username) {
@@ -112,10 +149,7 @@ public class NoteService {
         // Update file if present
         MultipartFile file = request.getFile();
         if (file != null) {
-            // Delete old file from S3
             fileStorageService.deleteFile(note.getStoredFileName());
-
-            // Upload new file
             String storedFileName = fileStorageService.storeFile(file);
             note.setOriginalFileName(file.getOriginalFilename());
             note.setStoredFileName(storedFileName);
@@ -127,6 +161,15 @@ public class NoteService {
         return mapToNoteResponse(updatedNote);
     }
 
+    /**
+     * Deletes a note from the database and removes its file from S3.
+     * Only the uploader or an admin can delete the note.
+     *
+     * @param id The ID of the note to delete.
+     * @param username The username of the authenticated user requesting deletion.
+     * @throws AccessDeniedException if the user is not authorized.
+     * @throws ResourceNotFoundException if the note is not found.
+     */
     @PreAuthorize("hasRole('ADMIN') or #username == principal.username")
     @Transactional
     public void deleteNote(Long id, String username) {
@@ -134,8 +177,8 @@ public class NoteService {
                 .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + id));
 
         if (!note.getUploadedBy().getUsername().equals(username) &&
-                !SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                        .stream().anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
+                SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                        .stream().noneMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"))) {
             throw new AccessDeniedException("You are not authorized to delete this note.");
         }
 
@@ -143,6 +186,15 @@ public class NoteService {
         noteRepository.deleteById(id);
     }
 
+    /**
+     * Retrieves a paginated list of notes, optionally filtered by uploader, subject, and title.
+     *
+     * @param uploadedBy Optional filter by username.
+     * @param subject Optional filter by subject.
+     * @param title Optional filter by title.
+     * @param pageable Pagination configuration.
+     * @return Page of NoteResponse objects.
+     */
     public Page<NoteResponse> listNotes(String uploadedBy, String subject, String title, Pageable pageable) {
         Specification<Note> spec = Specification.allOf();
 
@@ -164,6 +216,13 @@ public class NoteService {
                 .map(this::mapToNoteResponse);
     }
 
+    /**
+     * Generates a presigned URL to securely download a note.
+     *
+     * @param id The ID of the note.
+     * @return A presigned S3 URL string.
+     * @throws ResourceNotFoundException if the note is not found.
+     */
     public String downloadNote(Long id) {
         Note note = noteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Note not found with id: " + id));

@@ -29,17 +29,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Handles the logic executed immediately after a successful OAuth2 login (e.g., Google or GitHub).
+ * Responsible for mapping OAuth attributes to local User entities and issuing a JWT.
+ */
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private final OAuth2AuthorizedClientService authorizedClientService; // Injected service
+    private final OAuth2AuthorizedClientService authorizedClientService;
 
     @Value("${app.frontend.url:http://localhost:8080/index.html}")
     private String frontendUrl;
 
+    /**
+     * Triggered upon successful OAuth authentication. Extracts user details, saves them
+     * to the database if they are new, and redirects the client with a generated JWT token.
+     */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
@@ -59,7 +67,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             email = (String) attributes.get("email");
             name = (String) attributes.get("login");
 
-            // FIX: Fetch email manually if it is private
             if (email == null) {
                 email = getGithubEmail(oauthToken);
             }
@@ -83,6 +90,13 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 
+    /**
+     * Manually fetches the user's primary verified email from GitHub's API
+     * if the email is set to private on their GitHub profile.
+     *
+     * @param authentication The current OAuth2 authentication token.
+     * @return The user's primary verified email string, or null if not found.
+     */
     private String getGithubEmail(OAuth2AuthenticationToken authentication) {
         OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
                 authentication.getAuthorizedClientRegistrationId(),
@@ -120,6 +134,14 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         return null;
     }
 
+    /**
+     * Registers a newly authenticated OAuth2 user into the local database.
+     *
+     * @param email The user's email address.
+     * @param name The user's display name or login.
+     * @param registrationId The provider used (Google, GitHub).
+     * @return The saved User entity.
+     */
     private User registerNewUser(String email, String name, String registrationId) {
         User user = new User();
         user.setEmail(email);

@@ -4,6 +4,9 @@ import lombok.*;
 
 import java.time.Instant;
 
+/**
+ * Data Transfer Object for returning comprehensive details of a Note, including its S3 download URL.
+ */
 @Data
 @Builder
 public class NoteResponse {

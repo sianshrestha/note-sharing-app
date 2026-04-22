@@ -11,17 +11,18 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+/**
+ * Global exception handler that intercepts exceptions thrown by controllers
+ * and formats them into standardized JSON API error responses.
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<ApiErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException ex, HttpServletRequest request) {
         ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                "User Already Exists",
-                ex.getMessage(),
-                request.getRequestURI()
+                LocalDateTime.now(), HttpStatus.CONFLICT.value(),
+                "User Already Exists", ex.getMessage(), request.getRequestURI()
         );
         return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
@@ -29,11 +30,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFound(ResourceNotFoundException ex, HttpServletRequest request) {
         ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.NOT_FOUND.value(),
-                "Resource Not Found",
-                ex.getMessage(),
-                request.getRequestURI()
+                LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
+                "Resource Not Found", ex.getMessage(), request.getRequestURI()
         );
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
@@ -41,11 +39,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(FileStorageException.class)
     public ResponseEntity<ApiErrorResponse> handleFileStorageException(FileStorageException ex, HttpServletRequest request) {
         ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "File Storage Error",
-                ex.getMessage(),
-                request.getRequestURI()
+                LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "File Storage Error", ex.getMessage(), request.getRequestURI()
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -53,16 +48,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex, HttpServletRequest request) {
         ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.UNAUTHORIZED.value(),
-                "Invalid Credentials",
-                ex.getMessage(),
-                request.getRequestURI()
+                LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(),
+                "Invalid Credentials", ex.getMessage(), request.getRequestURI()
         );
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
-    // Handle validation errors (like @Valid failures)
+    /**
+     * Handles validation errors thrown when @Valid DTO constraints fail.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String errors = ex.getBindingResult()
@@ -72,25 +66,20 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
 
         ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Failed",
-                errors,
-                request.getRequestURI()
+                LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
+                "Validation Failed", errors, request.getRequestURI()
         );
-
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    // Catch all other exceptions
+    /**
+     * Catch-all handler for any unexpected exceptions.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception ex, HttpServletRequest request) {
         ApiErrorResponse response = new ApiErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
-                ex.getMessage(),
-                request.getRequestURI()
+                LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error", ex.getMessage(), request.getRequestURI()
         );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -5,6 +5,9 @@ import lombok.Data;
 
 import java.time.Instant;
 
+/**
+ * Data Transfer Object for returning bookmark details and associated note metadata.
+ */
 @Data
 @Builder
 public class BookmarkResponse {

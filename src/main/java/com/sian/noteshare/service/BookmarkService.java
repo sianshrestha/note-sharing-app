@@ -15,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service class for managing user bookmarks.
+ * Allows users to save notes to their profile for quick access.
+ */
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
@@ -23,6 +27,15 @@ public class BookmarkService {
     private final UserRepository userRepository;
     private final FileStorageService fileStorageService;
 
+    /**
+     * Creates a new bookmark linking a user to a specific note.
+     *
+     * @param noteId The ID of the note to be bookmarked.
+     * @param username The username of the user creating the bookmark.
+     * @return BookmarkResponse representing the newly created bookmark.
+     * @throws IllegalStateException if the note is already bookmarked by the user.
+     * @throws RuntimeException if the user or note is not found.
+     */
     @Transactional
     public BookmarkResponse addBookmark(Long noteId, String username) {
 
@@ -44,6 +57,13 @@ public class BookmarkService {
         return mapToResponse(SavedBookmark);
     }
 
+    /**
+     * Removes an existing bookmark for a user.
+     *
+     * @param noteId The ID of the bookmarked note.
+     * @param username The username of the user removing the bookmark.
+     * @throws RuntimeException if the user, note, or bookmark relationship is not found.
+     */
     @Transactional
     public void removeBookmark(Long noteId, String username) {
         User user = userRepository.findByUsername(username)
@@ -58,6 +78,13 @@ public class BookmarkService {
         bookmarkRepository.delete(bookmark);
     }
 
+    /**
+     * Retrieves all bookmarks saved by a specific user.
+     *
+     * @param username The username of the requesting user.
+     * @return A list of BookmarkResponse DTOs.
+     * @throws ResourceNotFoundException if the user is not found.
+     */
     public List<BookmarkResponse> listBookmarks(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
@@ -67,6 +94,12 @@ public class BookmarkService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Maps a Bookmark entity to a BookmarkResponse DTO, generating a presigned URL for the note.
+     *
+     * @param bookmark The Bookmark entity.
+     * @return BookmarkResponse DTO.
+     */
     private BookmarkResponse mapToResponse(Bookmark bookmark) {
         return BookmarkResponse.builder()
                 .id(bookmark.getId())
@@ -78,5 +111,4 @@ public class BookmarkService {
                 .createdAt(bookmark.getCreatedAt())
                 .build();
     }
-
 }
