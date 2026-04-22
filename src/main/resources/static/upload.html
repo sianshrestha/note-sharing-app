@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Note - ShareMyNotes</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <nav class="navbar">
+        <h1>📝 ShareMyNotes</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="upload.html">Upload Note</a>
+            <a href="bookmarks.html">Bookmarks</a>
+            <a href="profile.html">Profile</a>
+            <button onclick="logout()" class="danger btn-sm">Logout</button>
+        </div>
+    </nav>
+
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
+        <h2>Upload a New Note</h2>
+        <form id="uploadForm">
+            <div class="form-group"><label>Title *</label><input type="text" id="uploadTitle" required></div>
+            <div class="form-group"><label>Subject</label><input type="text" id="uploadSubject"></div>
+            <div class="form-group"><label>Description</label><textarea id="uploadDesc" rows="3"></textarea></div>
+            <div class="form-group"><label>File (PDF, TXT, PNG, JPG) *</label><input type="file" id="uploadFile" required></div>
+            <button type="submit" style="width: 100%;">Upload Note</button>
+        </form>
+    </div>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>

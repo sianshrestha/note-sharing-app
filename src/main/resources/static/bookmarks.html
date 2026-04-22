@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bookmarks - ShareMyNotes</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+    <nav class="navbar">
+        <h1>📝 ShareMyNotes</h1>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="upload.html">Upload Note</a>
+            <a href="bookmarks.html">Bookmarks</a>
+            <a href="profile.html">Profile</a>
+            <button onclick="logout()" class="danger btn-sm">Logout</button>
+        </div>
+    </nav>
+
+    <div class="card">
+        <h2>My Saved Bookmarks</h2>
+        <div id="bookmarksList"><p>Loading bookmarks...</p></div>
+    </div>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
