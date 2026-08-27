@@ -121,6 +121,13 @@
             <artifactId>logback-core</artifactId>
             <version>1.5.19</version>
         </dependency>
+        <!-- Add this dependency so tests using H2 in-memory DB can find the driver -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
 
 
     </dependencies>

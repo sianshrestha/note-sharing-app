@@ -94,7 +94,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/css/**", "/js/**", "/*.html").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/auth/**", "/public/**").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/notes/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/notes/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/users/profile/**").permitAll()

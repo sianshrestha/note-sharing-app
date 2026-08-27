@@ -20,5 +20,6 @@ public class JwtAuthenticationResponse {
 
     public JwtAuthenticationResponse(String accessToken) {
         this.accessToken = accessToken;
+        this.tokenType = "Bearer";
     }
 }
